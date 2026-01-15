@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 public class PrepController : MonoBehaviour
 {
@@ -31,6 +32,10 @@ public class PrepController : MonoBehaviour
     public int maxTools = 3;
     public float prepTimeSeconds = 45f;
 
+    [Header("Debug")]
+    public Button debugSkipTimerButton;
+    public Button debugResetSceneButton;
+
     private float timeLeft;
     private bool locked;
     private readonly List<string> selected = new();
@@ -55,9 +60,11 @@ public class PrepController : MonoBehaviour
 
     void Update()
     {
-        // Reload requirement
-        if (Input.GetKeyDown(KeyCode.R))
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
+        {
+            Debug_ResetScene();
+            return;
+        }
 
         if (locked) return;
 
@@ -92,7 +99,9 @@ public class PrepController : MonoBehaviour
         saltButton.onClick.AddListener(() => ToggleTool("Salt Pouch"));
         thermalButton.onClick.AddListener(() => ToggleTool("Thermal Camera"));
         uvButton.onClick.AddListener(() => ToggleTool("UV Light"));
-        ironButton.onClick.AddListener(() => ToggleTool("Iron Talisman"));
+        ironButton.onClick.AddListener(() => ToggleTool("Crucifix"));
+        debugSkipTimerButton.onClick.AddListener(() => Debug_SkipTimer());
+        debugResetSceneButton.onClick.AddListener(() => Debug_ResetScene());
     }
 
     void ToggleTool(string toolName)
@@ -134,7 +143,7 @@ public class PrepController : MonoBehaviour
         ironButton.interactable = false;
 
         // Simple "risk forecast" result text
-        bool hasProtection = selected.Contains("Salt Pouch") || selected.Contains("Iron Talisman");
+        bool hasProtection = selected.Contains("Salt Pouch") || selected.Contains("Crucifix");
         bool hasSpiritBox = selected.Contains("Spirit Box");
         int evidenceTools = 0;
         if (selected.Contains("EMF Reader")) evidenceTools++;
@@ -176,4 +185,18 @@ public class PrepController : MonoBehaviour
         if (clip == null || sfxSource == null) return;
         sfxSource.PlayOneShot(clip);
     }
+
+
+    public void Debug_SkipTimer()
+{
+    if (locked) return;
+    timeLeft = 0f;
+    UpdateTimerUI();
+    LockIn();
+}
+
+public void Debug_ResetScene()
+{
+    SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+}
 }
