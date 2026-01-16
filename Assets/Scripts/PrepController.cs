@@ -65,6 +65,11 @@ public class PrepController : MonoBehaviour
             Debug_ResetScene();
             return;
         }
+        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            QuitApplication();
+            return;
+        }
 
         if (locked) return;
 
@@ -81,7 +86,7 @@ public class PrepController : MonoBehaviour
             {
                 float t = 1f - (timeLeft / prepTimeSeconds); // 0 -> 1
                 ambientSource.volume = Mathf.Lerp(0.25f, 0.9f, t);
-                ambientSource.pitch  = Mathf.Lerp(1.0f, 1.1f, t);
+                ambientSource.pitch = Mathf.Lerp(1.0f, 1.1f, t);
             }
 
             // Warning sting at 10 seconds
@@ -188,15 +193,25 @@ public class PrepController : MonoBehaviour
 
 
     public void Debug_SkipTimer()
-{
-    if (locked) return;
-    timeLeft = 0f;
-    UpdateTimerUI();
-    LockIn();
-}
+    {
+        if (locked) return;
+        timeLeft = 0f;
+        UpdateTimerUI();
+        LockIn();
+    }
 
-public void Debug_ResetScene()
-{
-    SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-}
+    public void Debug_ResetScene()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    public void QuitApplication()
+    {
+        #if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+        #else
+            Application.Quit();
+        #endif
+    }
+
 }
